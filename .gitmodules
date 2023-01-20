@@ -1,0 +1,4 @@
+[submodule "dynmsg/submodules/jsoncpp"]
+	path = dynmsg/submodules/jsoncpp
+	url = git@github.com:open-source-parsers/jsoncpp.git
+  tag = 1.9.4

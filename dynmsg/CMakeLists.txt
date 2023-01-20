@@ -6,9 +6,9 @@ if(NOT CMAKE_C_STANDARD)
   set(CMAKE_C_STANDARD 99)
 endif()
 
-# Default to C++14
+# Default to C++17
 if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
+  set(CMAKE_CXX_STANDARD 17)
 endif()
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -26,6 +26,24 @@ find_package(rosidl_typesupport_introspection_c REQUIRED)
 find_package(rosidl_typesupport_introspection_cpp REQUIRED)
 find_package(yaml_cpp_vendor REQUIRED)
 
+## JSONCPP library
+include(ExternalProject)
+ExternalProject_Add(project_jsoncpp
+    SOURCE_DIR ${CMAKE_SOURCE_DIR}/submodules/jsoncpp
+    CMAKE_ARGS "-DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX} -DUSE_SHARED_LIBRARY:BOOL=ON"
+    INSTALL_COMMAND ""
+    BINARY_DIR
+    BUILD_ALWAYS 0
+)
+
+ExternalProject_Get_Property(project_jsoncpp BINARY_DIR)
+ExternalProject_Get_Property(project_jsoncpp SOURCE_DIR)
+
+add_library(jsoncpp SHARED IMPORTED)
+set_target_properties(jsoncpp PROPERTIES
+  IMPORTED_LOCATION "${BINARY_DIR}/lib/libjsoncpp.so"
+)
+
 # See config.hpp.in
 option(DYNMSG_VALUE_ONLY "Write message member value directly instead default+value" ON)
 option(DYNMSG_YAML_CPP_BAD_INT8_HANDLING "Work around buggy [u]int8_t handling by yaml-cpp" ON)
@@ -35,6 +53,7 @@ configure_file(include/${PROJECT_NAME}/config.hpp.in include/${PROJECT_NAME}/con
 add_library(dynmsg STATIC
   src/msg_parser_c.cpp
   src/msg_parser_cpp.cpp
+  src/msg_parser_json_cpp.cpp
   src/message_reading_c.cpp
   src/message_reading_cpp.cpp
   src/typesupport.cpp
@@ -54,7 +73,10 @@ target_include_directories(dynmsg PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>"
   "$<INSTALL_INTERFACE:include>"
+  PRIVATE
+  ${SOURCE_DIR}/include
 )
+target_link_libraries(dynmsg jsoncpp)
 ament_export_include_directories(include)
 ament_export_libraries(dynmsg)
 ament_export_targets(dynmsg HAS_LIBRARY_TARGET)
@@ -64,6 +86,9 @@ ament_export_dependencies(rosidl_runtime_cpp)
 ament_export_dependencies(rosidl_typesupport_introspection_c)
 ament_export_dependencies(rosidl_typesupport_introspection_cpp)
 ament_export_dependencies(yaml_cpp_vendor)
+
+# a fix for wrongly deleted template overloads for Json::Value::as() and Json::Value::is() methods
+add_compile_definitions(JSONCPP_TEMPLATE_DELETE=)
 
 install(
   DIRECTORY include/ ${CMAKE_CURRENT_BINARY_DIR}/include/
