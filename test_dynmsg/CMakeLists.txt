@@ -38,6 +38,18 @@ install(TARGETS
   DESTINATION lib/${PROJECT_NAME}
 )
 
+add_executable(conversion_with_json
+  examples/conversion_with_json.cpp
+)
+ament_target_dependencies(conversion_with_json
+  dynmsg
+  std_msgs
+)
+install(TARGETS
+  conversion_with_json
+  DESTINATION lib/${PROJECT_NAME}
+)
+
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
