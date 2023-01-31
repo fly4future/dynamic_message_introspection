@@ -18,7 +18,7 @@
 #include <string>
 
 #include "dynmsg/message_reading.hpp"
-#include "dynmsg/msg_parser.hpp"
+#include "dynmsg/msg_parser_json.hpp"
 #include "dynmsg/typesupport.hpp"
 #include "dynmsg/yaml_utils.hpp"
 
@@ -54,34 +54,18 @@ int main()
   // Convert YAML string to JSON string
   YAML::Emitter emitter;
   emitter << YAML::DoubleQuoted << YAML::Flow << yaml_msg;
-  std::string json_str(emitter.c_str());
-  printf("%s\n", json_str.c_str());
+  std::string json_string(emitter.c_str());
+  printf("%s\n", json_string.c_str());
 
-  // Parse JSON string as a JSON struct
-  Json::Reader reader;
-  Json::Value json_data;
-  reader.parse(json_str.c_str(), json_data);
-  printf("stamp: sec: %s\n", json_data["stamp"]["sec"].asString().c_str());
-
-  // Convert JSON struct back to JSON string
-  Json::FastWriter writer;
-  const std::string json_str_again = writer.write(json_data);
-  printf("%s\n", json_str_again.c_str());
-
-  // Convert JSON string to YAML struct
-  YAML::Node yaml_msg_again = YAML::Load(json_str_again);
-  const std::string yaml_string_again = dynmsg::yaml_to_string(yaml_msg);
-  printf("%s\n", yaml_string_again.c_str());
-
-  // Convert YAML string back to a ROS 2 message
-  std_msgs::msg::Header msg_from_yaml;
-  void * ros_message = reinterpret_cast<void *>(&msg_from_yaml);
-  dynmsg::cpp::yaml_and_typeinfo_to_rosmsg(ros_msg.type_info, yaml_string_again, ros_message);
+  // Convert the JSON string back to ROS2 message
+  std_msgs::msg::Header msg_from_json;
+  void * ros_message = reinterpret_cast<void *>(&msg_from_json);
+  dynmsg::cpp::json_and_typeinfo_to_rosmsg(ros_msg.type_info, json_string, ros_message);
   // Prints:
   //   my_frame
   //   4 s, 20 ns
-  printf("%s\n", msg_from_yaml.frame_id.c_str());
-  printf("%d s, %d ns\n", msg_from_yaml.stamp.sec, msg_from_yaml.stamp.nanosec);
+  printf("%s\n", msg_from_json.frame_id.c_str());
+  printf("%d s, %d ns\n", msg_from_json.stamp.sec, msg_from_json.stamp.nanosec);
 
   return 0;
 }
