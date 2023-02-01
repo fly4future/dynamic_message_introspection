@@ -18,7 +18,7 @@
 #include <string>
 
 #include "dynmsg/message_reading.hpp"
-#include "dynmsg/msg_parser_json.hpp"
+#include "dynmsg/msg_parser.hpp"
 #include "dynmsg/typesupport.hpp"
 #include "dynmsg/yaml_utils.hpp"
 
@@ -57,15 +57,28 @@ int main()
   std::string json_string(emitter.c_str());
   printf("%s\n", json_string.c_str());
 
-  // Convert the JSON string back to ROS2 message
-  std_msgs::msg::Header msg_from_json;
-  void * ros_message = reinterpret_cast<void *>(&msg_from_json);
-  dynmsg::cpp::json_and_typeinfo_to_rosmsg(ros_msg.type_info, json_string, ros_message);
+  // Use the jsoncpp library
+  Json::Value json_data;
+  Json::Reader reader;
+  reader.parse(json_string, json_data);
+  printf("%s\n", json_data["frame_id"].asCString());
+  printf("%s s, %s ns\n", json_data["stamp"]["sec"].asCString(), json_data["stamp"]["nanosec"].asCString());
+  
+  printf("--------------\n");
+
+  // Convert the JSON string back to YAML
+  YAML::Node reconstructed_yaml_msg = YAML::Load(json_string.c_str());
+  std::string reconstructed_yaml_string = dynmsg::yaml_to_string(reconstructed_yaml_msg);
+
+  // Convert the YAML string back to a ROS 2 message
+  std_msgs::msg::Header msg_from_yaml;
+  void * ros_message = reinterpret_cast<void *>(&msg_from_yaml);
+  dynmsg::cpp::yaml_and_typeinfo_to_rosmsg(ros_msg.type_info, reconstructed_yaml_string, ros_message);
   // Prints:
   //   my_frame
   //   4 s, 20 ns
-  printf("%s\n", msg_from_json.frame_id.c_str());
-  printf("%d s, %d ns\n", msg_from_json.stamp.sec, msg_from_json.stamp.nanosec);
+  printf("%s\n", msg_from_yaml.frame_id.c_str());
+  printf("%d s, %d ns\n", msg_from_yaml.stamp.sec, msg_from_yaml.stamp.nanosec);
 
   return 0;
 }
