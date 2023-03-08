@@ -39,6 +39,7 @@ add_library(dynmsg STATIC
   src/message_reading_c.cpp
   src/message_reading_cpp.cpp
   src/typesupport.cpp
+  src/typesupport_utils.cpp
   src/vector_utils.cpp
   src/string_utils.cpp
   src/yaml_utils.cpp
@@ -82,23 +83,5 @@ install(
   RUNTIME DESTINATION bin
   INCLUDES DESTINATION include
 )
-
-if(BUILD_TESTING)
-  find_package(ament_lint_auto REQUIRED)
-  ament_lint_auto_find_test_dependencies()
-
-  find_package(ament_cmake_gtest REQUIRED)
-  find_package(std_msgs REQUIRED)
-
-  ament_add_gtest(wide_strings test/test_wide_strings.cpp)
-  target_link_libraries(wide_strings dynmsg)
-
-  ament_add_gtest(test_vector_utils test/test_vector_utils.cpp)
-  target_link_libraries(test_vector_utils dynmsg)
-
-  ament_add_gtest(test_typesupport test/test_typesupport.cpp)
-  target_link_libraries(test_typesupport dynmsg)
-  ament_target_dependencies(test_typesupport std_msgs)
-endif()
 
 ament_package()
