@@ -25,7 +25,6 @@ find_package(rosidl_runtime_cpp REQUIRED)
 find_package(rosidl_typesupport_introspection_c REQUIRED)
 find_package(rosidl_typesupport_introspection_cpp REQUIRED)
 find_package(yaml_cpp_vendor REQUIRED)
-find_package(jsoncpp REQUIRED)
 
 # See config.hpp.in
 option(DYNMSG_VALUE_ONLY "Write message member value directly instead default+value" ON)
@@ -59,7 +58,6 @@ target_include_directories(dynmsg PUBLIC
   PRIVATE
   ${SOURCE_DIR}/include
 )
-target_link_libraries(dynmsg jsoncpp)
 ament_export_include_directories(include)
 ament_export_libraries(dynmsg)
 ament_export_targets(dynmsg HAS_LIBRARY_TARGET)
